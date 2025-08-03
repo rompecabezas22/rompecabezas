@@ -1,0 +1,99 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rompecabezas 4x4</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #f0f0f0;
+    }
+    h1 { margin: 20px; }
+    #puzzle {
+      display: grid;
+      grid-template-columns: repeat(4, 100px);
+      grid-template-rows: repeat(4, 100px);
+      gap: 2px;
+      width: 402px;
+      background: #aaa;
+    }
+    .piece {
+      width: 100px;
+      height: 100px;
+      cursor: grab;
+    }
+    #pieces {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      width: 420px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Rompecabezas 4x4</h1>
+  <div id="puzzle"></div>
+  <div id="pieces"></div>
+
+  <script>
+    const correctOrder = [];
+    const puzzle = document.getElementById('puzzle');
+    const pieces = document.getElementById('pieces');
+
+    // Crear la grilla vacía
+    for (let i = 0; i < 16; i++) {
+      const dropZone = document.createElement('div');
+      dropZone.classList.add('piece');
+      dropZone.dataset.index = i;
+      dropZone.ondragover = e => e.preventDefault();
+      dropZone.ondrop = drop;
+      puzzle.appendChild(dropZone);
+    }
+
+    // Cargar piezas mezcladas
+    let indexes = [...Array(16).keys()];
+    indexes = indexes.sort(() => Math.random() - 0.5);
+    indexes.forEach(i => {
+      const img = document.createElement('img');
+      img.src = `puzzle_pieces/piece_${Math.floor(i / 4)}_${i % 4}.png`;
+      img.classList.add('piece');
+      img.draggable = true;
+      img.id = `piece-${i}`;
+      img.dataset.index = i;
+      img.ondragstart = drag;
+      pieces.appendChild(img);
+      correctOrder.push(img.src);
+    });
+
+    function drag(e) {
+      e.dataTransfer.setData("text", e.target.id);
+    }
+
+    function drop(e) {
+      const pieceId = e.dataTransfer.getData("text");
+      const piece = document.getElementById(pieceId);
+      if (e.target.tagName === 'IMG') return;
+      if (e.target.firstChild) return;
+      e.target.appendChild(piece);
+      checkWin();
+    }
+
+    function checkWin() {
+      const slots = document.querySelectorAll('#puzzle .piece');
+      const placed = [...slots].map(slot => {
+        const img = slot.querySelector('img');
+        return img ? img.dataset.index : null;
+      });
+      if (placed.every((val, i) => val != null && +val === i)) {
+        alert("🎉 ¡Rompecabezas completado!");
+      }
+    }
+  </script>
+</body>
+</html>
